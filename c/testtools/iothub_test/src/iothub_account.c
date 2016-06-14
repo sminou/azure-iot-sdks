@@ -243,6 +243,7 @@ IOTHUB_ACCOUNT_INFO_HANDLE IoTHubAccount_Init(bool createDevice, const char* cal
         {
             if (retrieveConnStringInfo(iothub_account_info) != 0)
             {
+                LogError("retrieveConnStringInfo failed.\r\n");
                 free(iothub_account_info);
                 iothub_account_info = NULL;
             }
@@ -252,7 +253,7 @@ IOTHUB_ACCOUNT_INFO_HANDLE IoTHubAccount_Init(bool createDevice, const char* cal
                 if (iothub_account_info->iothub_service_client_auth_handle == NULL)
                 {
                     LogError("IoTHubServiceClientAuth_CreateFromConnectionString failed\r\n");
-                    IoTHubAccount_deinit((IOTHUB_ACCOUNT_INFO_HANDLE)iothub_account_info);
+                    free(iothub_account_info);
                     iothub_account_info = NULL;
                 }
                 else
@@ -261,6 +262,8 @@ IOTHUB_ACCOUNT_INFO_HANDLE IoTHubAccount_Init(bool createDevice, const char* cal
                     if (iothub_account_info->iothub_messaging_handle == NULL)
                     {
                         LogError("IoTHubMessaging_LL_Create failed\r\n");
+                        IoTHubServiceClientAuth_Destroy(iothub_account_info->iothub_service_client_auth_handle);
+                        free(iothub_account_info);
                         iothub_account_info = NULL;
                     }
                     else
@@ -269,6 +272,9 @@ IOTHUB_ACCOUNT_INFO_HANDLE IoTHubAccount_Init(bool createDevice, const char* cal
                         if (iothub_account_info->iothub_registrymanager_handle == NULL)
                         {
                             LogError("IoTHubRegistryManager_Create failed\r\n");
+                            IoTHubMessaging_LL_Destroy(iothub_account_info->iothub_messaging_handle);
+                            IoTHubServiceClientAuth_Destroy(iothub_account_info->iothub_service_client_auth_handle);
+                            free(iothub_account_info);
                             iothub_account_info = NULL;
                         }
                         else
@@ -276,6 +282,10 @@ IOTHUB_ACCOUNT_INFO_HANDLE IoTHubAccount_Init(bool createDevice, const char* cal
                             if (generateDeviceName(iothub_account_info, "") != 0)
                             {
                                 LogError("generateDeviceName failed\r\n");
+                                IoTHubMessaging_LL_Destroy(iothub_account_info->iothub_messaging_handle);
+                                IoTHubRegistryManager_Destroy(iothub_account_info->iothub_registrymanager_handle);
+                                IoTHubServiceClientAuth_Destroy(iothub_account_info->iothub_service_client_auth_handle);
+                                free(iothub_account_info);
                                 iothub_account_info = NULL;
                             }
 
@@ -291,7 +301,9 @@ IOTHUB_ACCOUNT_INFO_HANDLE IoTHubAccount_Init(bool createDevice, const char* cal
                             if (iothub_registrymanager_result != IOTHUB_REGISTRYMANAGER_OK)
                             {
                                 LogError("IoTHubRegistryManager_CreateDevice failed\r\n");
-                                IoTHubAccount_deinit((IOTHUB_ACCOUNT_INFO_HANDLE)iothub_account_info);
+                                IoTHubRegistryManager_Destroy(iothub_account_info->iothub_registrymanager_handle);
+                                IoTHubServiceClientAuth_Destroy(iothub_account_info->iothub_service_client_auth_handle);
+                                free(iothub_account_info);
                                 iothub_account_info = NULL;
                             }
                             else
