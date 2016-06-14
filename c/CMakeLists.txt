@@ -9,7 +9,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(LINUX TRUE)
 	#on Linux, enable valgrind
 	#these commands (MEMORYCHECK...) need to apear BEFORE include(CTest) or they will not have any effect
-	find_program(MEMORYCHECK_COMMAND valgrind)	
+	find_program(MEMORYCHECK_COMMAND valgrind)
 	set(MEMORYCHECK_COMMAND_OPTIONS "--trace-children=yes --leak-check=full --error-exitcode=1")
 endif()
 
@@ -29,7 +29,7 @@ option(build_python "builds the Python native iothub_client module" OFF)
 option(build_javawrapper "builds the native iothub_client library for java C wrapper" OFF)
 
 
-#Use solution folders. 
+#Use solution folders.
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 if(IN_OPENWRT)
@@ -71,39 +71,39 @@ include_directories(${SHARED_UTIL_INC_FOLDER}/azure_c_shared_utility)
 #this project also targets several OSes
 
 include(CheckSymbolExists)
-function(detect_architecture symbol arch) 
-    if (NOT DEFINED ARCHITECTURE) 
+function(detect_architecture symbol arch)
+    if (NOT DEFINED ARCHITECTURE)
         set(CMAKE_REQUIRED_QUIET 1)
-        check_symbol_exists("${symbol}" "" ARCHITECTURE_${arch}) 
-        unset(CMAKE_REQUIRED_QUIET) 
-  
-        # The output variable needs to be unique across invocations otherwise 
-        # CMake's crazy scope rules will keep it defined 
-        if (ARCHITECTURE_${arch}) 
-            set(ARCHITECTURE "${arch}" PARENT_SCOPE) 
-            set(ARCHITECTURE_${arch} 1 PARENT_SCOPE) 
-            add_definitions(-DARCHITECTURE_${arch}=1) 
-        endif() 
-    endif() 
-endfunction() 
+        check_symbol_exists("${symbol}" "" ARCHITECTURE_${arch})
+        unset(CMAKE_REQUIRED_QUIET)
 
-if (MSVC) 
-    detect_architecture("_M_AMD64" x86_64) 
-    detect_architecture("_M_IX86" x86) 
-    detect_architecture("_M_ARM" ARM) 
-else() 
-    detect_architecture("__x86_64__" x86_64) 
-    detect_architecture("__i386__" x86) 
-    detect_architecture("__arm__" ARM) 
-endif() 
-if (NOT DEFINED ARCHITECTURE) 
-    set(ARCHITECTURE "GENERIC") 
-endif() 
+        # The output variable needs to be unique across invocations otherwise
+        # CMake's crazy scope rules will keep it defined
+        if (ARCHITECTURE_${arch})
+            set(ARCHITECTURE "${arch}" PARENT_SCOPE)
+            set(ARCHITECTURE_${arch} 1 PARENT_SCOPE)
+            add_definitions(-DARCHITECTURE_${arch}=1)
+        endif()
+    endif()
+endfunction()
+
+if (MSVC)
+    detect_architecture("_M_AMD64" x86_64)
+    detect_architecture("_M_IX86" x86)
+    detect_architecture("_M_ARM" ARM)
+else()
+    detect_architecture("__x86_64__" x86_64)
+    detect_architecture("__i386__" x86)
+    detect_architecture("__arm__" ARM)
+endif()
+if (NOT DEFINED ARCHITECTURE)
+    set(ARCHITECTURE "GENERIC")
+endif()
 message(STATUS "Target architecture: ${ARCHITECTURE}")
 
 function(linkUAMQP whatExecutableIsBuilding)
     include_directories(${UAMQP_INC_FOLDER})
-    
+
     if(WIN32)
         #windows needs this define
         add_definitions(-D_CRT_SECURE_NO_WARNINGS)
@@ -113,14 +113,14 @@ function(linkUAMQP whatExecutableIsBuilding)
 
         if(${use_openssl} OR ${use_wsio})
             target_link_libraries(${whatExecutableIsBuilding} $ENV{OpenSSLDir}/lib/ssleay32.lib $ENV{OpenSSLDir}/lib/libeay32.lib)
-        
+
             file(COPY $ENV{OpenSSLDir}/bin/libeay32.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
             file(COPY $ENV{OpenSSLDir}/bin/ssleay32.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
         endif()
     else()
         target_link_libraries(${whatExecutableIsBuilding} uamqp aziotsharedutil ssl crypto)
     endif()
-    
+
     if(${use_wsio})
         target_link_libraries(${whatExecutableIsBuilding} websockets)
     endif()
@@ -191,18 +191,19 @@ else()
     set(THREAD_C_FILE ${SHARED_UTIL_ADAPTER_FOLDER}/threadapi_pthreads.c)
 endif()
 
+add_subdirectory(service)
+
 if(${run_e2e_tests} OR ${run_longhaul_tests})
     add_subdirectory(testtools)
 endif()
 
 add_subdirectory(iothub_client)
-add_subdirectory(service)
 add_subdirectory(serializer)
 if(NOT "${build_python}" STREQUAL "OFF")
     add_subdirectory(../python/device/iothub_client_python python)
 endif()
 
-if("${build_javawrapper}" STREQUAL "ON")	
+if("${build_javawrapper}" STREQUAL "ON")
      add_subdirectory(../javawrapper/device/iothub_client_javawrapper javawrapper)
 endif()
 

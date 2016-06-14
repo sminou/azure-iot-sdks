@@ -21,7 +21,7 @@ set(${theseTestsName}_c_files
 set(${theseTestsName}_h_files
 )
 
-include_directories(${IOTHUB_TEST_INC_FOLDER})
+include_directories(${IOTHUB_TEST_INC_FOLDER} ${IOTHUB_SERVICE_CLIENT_INC_FOLDER})
 
 build_test_artifacts(${theseTestsName} ON)
 
@@ -38,7 +38,7 @@ if(WIN32)
 		linkUAMQP(${theseTestsName}_dll)
 		linkMqttLibrary(${theseTestsName}_dll)
 	endif()
-	
+
 	if(TARGET ${theseTestsName}_exe)
 		target_link_libraries(${theseTestsName}_exe
 			iothub_test

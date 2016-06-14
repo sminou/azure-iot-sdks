@@ -396,7 +396,7 @@ BEGIN_TEST_SUITE(iothubclient_amqp_e2etests)
         IOTHUB_MESSAGING_HANDLE iothub_messaging_handle = IoTHubAccount_GetMessagingHandle(g_iothubAcctInfo);
 
         IOTHUB_MESSAGING_RESULT iotHubMessagingResult;
-        iotHubMessagingResult = IoTHubMessaging_LL_Open(iothub_messaging_handle, NULL, "");
+        iotHubMessagingResult = IoTHubMessaging_LL_Open(iothub_messaging_handle, NULL, (void*)1);
         if (iotHubMessagingResult == IOTHUB_MESSAGING_OK)
         {
             IOTHUB_MESSAGE_HANDLE messageHandle = IoTHubMessage_CreateFromByteArray((const unsigned char*)notifyData->toBeSend, notifyData->toBeSendSize);
