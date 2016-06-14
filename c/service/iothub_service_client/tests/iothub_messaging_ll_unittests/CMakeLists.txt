@@ -17,6 +17,7 @@ set(${theseTestsName}_c_files
 )
 
 set(${theseTestsName}_h_files
+../../inc/iothub_messaging_ll.h
 )
 
 build_c_test_artifacts(${theseTestsName} ON "UnitTests")
