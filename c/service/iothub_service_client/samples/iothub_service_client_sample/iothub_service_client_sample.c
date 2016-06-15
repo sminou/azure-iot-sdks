@@ -180,6 +180,22 @@ void iothub_service_client_sample_run(void)
             (void)printf("IoTHubRegistryManager_GetStatistics failed\n");
         }
 
+        list_destroy(deviceList);
+
+        free((char*)deviceInfo.deviceId);
+        free((char*)deviceInfo.primaryKey);
+        free((char*)deviceInfo.secondaryKey);
+        free((char*)deviceInfo.generationId);
+        free((char*)deviceInfo.eTag);
+        free((char*)deviceInfo.connectionStateUpdatedTime);
+        free((char*)deviceInfo.statusReason);
+        free((char*)deviceInfo.statusUpdatedTime);
+        free((char*)deviceInfo.lastActivityTime);
+        free((char*)deviceInfo.configuration);
+        free((char*)deviceInfo.deviceProperties);
+        free((char*)deviceInfo.serviceProperties);
+
+
         (void)printf("Calling IoTHubRegistryManager_Destroy...\n");
         IoTHubRegistryManager_Destroy(iotHubRegistryManagerHandle);
 

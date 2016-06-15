@@ -173,6 +173,23 @@ static IOTHUB_REGISTRYMANAGER_RESULT parseDeviceJson(BUFFER_HANDLE jsonBuffer, I
     IOTHUB_REGISTRYMANAGER_RESULT result;
 
     IOTHUB_DEVICE iothubDevice = *deviceInfo;
+    iothubDevice.deviceId = NULL;
+    iothubDevice.primaryKey = NULL;
+    iothubDevice.secondaryKey = NULL;
+    iothubDevice.generationId = NULL;
+    iothubDevice.eTag = NULL;
+    iothubDevice.connectionStateUpdatedTime = NULL;
+    iothubDevice.connectionState = IOTHUB_DEVICE_CONNECTION_STATE_DISCONNECTED;
+    iothubDevice.connectionStateUpdatedTime = NULL;
+    iothubDevice.status = IOTHUB_DEVICE_STATUS_DISABLED;
+    iothubDevice.statusReason = NULL;
+    iothubDevice.statusUpdatedTime = NULL;
+    iothubDevice.lastActivityTime = NULL;
+    iothubDevice.cloudToDeviceMessageCount = 0;
+    iothubDevice.isManaged = false;
+    iothubDevice.configuration = NULL;
+    iothubDevice.deviceProperties = NULL;
+    iothubDevice.serviceProperties = NULL;
 
     /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_024: [ If the deviceInfo out parameter is not NULL IoTHubRegistryManager_CreateDevice shall save the received deviceInfo to the out parameter and return IOTHUB_REGISTRYMANAGER_OK ] */
     /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_033: [ IoTHubRegistryManager_GetDevice shall verify the received HTTP status code and if it is less or equal than 300 then try to parse the response JSON to deviceInfo for the following properties: deviceId, primaryKey, secondaryKey, generationId, eTag, connectionState, connectionstateUpdatedTime, status, statusReason, statusUpdatedTime, lastActivityTime, cloudToDeviceMessageCount ] */
@@ -220,47 +237,163 @@ static IOTHUB_REGISTRYMANAGER_RESULT parseDeviceJson(BUFFER_HANDLE jsonBuffer, I
         }
         else
         {
-            iothubDevice.deviceId = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_NAME);
-            iothubDevice.primaryKey = (char*)json_object_dotget_string(root_object, DEVICE_JSON_KEY_DEVICE_PRIMARY_KEY);
-            iothubDevice.secondaryKey = (char*)json_object_dotget_string(root_object, DEVICE_JSON_KEY_DEVICE_SECONDARY_KEY);
-            iothubDevice.generationId = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_GENERATION_ID);
-            iothubDevice.eTag = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_ETAG);
+            const char* deviceId = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_NAME);
+            const char* primaryKey = (char*)json_object_dotget_string(root_object, DEVICE_JSON_KEY_DEVICE_PRIMARY_KEY);
+            const char* secondaryKey = (char*)json_object_dotget_string(root_object, DEVICE_JSON_KEY_DEVICE_SECONDARY_KEY);
+            const char* generationId = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_GENERATION_ID);
+            const char* eTag = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_ETAG);
 
-            iothubDevice.connectionState = IOTHUB_DEVICE_CONNECTION_STATE_DISCONNECTED;
-            const char* value = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_CONNECTIONSTATE);
-            if ((value != NULL) && (strcmp(value, DEVICE_JSON_DEFAULT_VALUE_CONNECTED) == 0))
+            const char* connectionState = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_CONNECTIONSTATE);
+            const char* connectionStateUpdatedTime = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_CONNECTIONSTATEUPDATEDTIME);
+
+            const char* status = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_STATUS);
+            const char* statusReason = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_STATUSREASON);
+            const char* statusUpdatedTime = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_STATUSUPDATEDTIME);
+
+            const char* lastActivityTime = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_LASTACTIVITYTIME);
+            const char* cloudToDeviceMessageCount = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_CLOUDTODEVICEMESSAGECOUNT);
+
+            const char* isManaged = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_ISMANAGED);
+            const char* configuration = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_CONFIGURATION);
+            const char* deviceProperties = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_DEVICEROPERTIES);
+            const char* serviceProperties = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_SERVICEPROPERTIES);
+
+            if (deviceId != NULL)
+            {
+                if (mallocAndStrcpy_s((char**)&iothubDevice.deviceId, deviceId) != 0)
+                {
+                    /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                    /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                    LogError("mallocAndStrcpy_s failed for deviceId");
+                    result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                }
+            }
+            if (primaryKey != NULL)
+            {
+                if (mallocAndStrcpy_s((char**)&iothubDevice.primaryKey, primaryKey) != 0)
+                {
+                    /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                    /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                    LogError("mallocAndStrcpy_s failed for primaryKey");
+                    result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                }
+            }
+            if (secondaryKey != NULL)
+            {
+                if (mallocAndStrcpy_s((char**)&iothubDevice.secondaryKey, secondaryKey) != 0)
+                {
+                    /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                    /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                    LogError("mallocAndStrcpy_s failed for secondaryKey");
+                    result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                }
+            }
+            if (generationId != NULL)
+            {
+                if (mallocAndStrcpy_s((char**)&iothubDevice.generationId, generationId) != 0)
+                {
+                    /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                    /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                    LogError("mallocAndStrcpy_s failed for generationId");
+                    result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                }
+            }
+            if (eTag != NULL)
+            {
+                if (mallocAndStrcpy_s((char**)&iothubDevice.eTag, eTag) != 0)
+                {
+                    /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                    /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                    LogError("mallocAndStrcpy_s failed for eTag");
+                    result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                }
+            }
+            if (connectionStateUpdatedTime != NULL)
+            {
+                if (mallocAndStrcpy_s((char**)&iothubDevice.connectionStateUpdatedTime, connectionStateUpdatedTime) != 0)
+                {
+                    /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                    /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                    LogError("mallocAndStrcpy_s failed for connectionStateUpdatedTime");
+                    result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                }
+            }
+            if (statusReason != NULL)
+            {
+                if (mallocAndStrcpy_s((char**)&iothubDevice.statusReason, statusReason) != 0)
+                {
+                    /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                    /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                    LogError("mallocAndStrcpy_s failed for statusReason");
+                    result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                }
+            }
+            if (statusUpdatedTime != NULL)
+            {
+                if (mallocAndStrcpy_s((char**)&iothubDevice.statusUpdatedTime, statusUpdatedTime) != 0)
+                {
+                    /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                    /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                    LogError("mallocAndStrcpy_s failed for statusUpdatedTime");
+                    result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                }
+            }
+            if (lastActivityTime != NULL)
+            {
+                if (mallocAndStrcpy_s((char**)&iothubDevice.lastActivityTime, lastActivityTime) != 0)
+                {
+                    /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                    /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                    LogError("mallocAndStrcpy_s failed for lastActivityTime");
+                    result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                }
+            }
+            if (configuration != NULL)
+            {
+                if (mallocAndStrcpy_s((char**)&iothubDevice.configuration, configuration) != 0)
+                {
+                    /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                    /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                    LogError("mallocAndStrcpy_s failed for configuration");
+                    result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                }
+            }
+            if (deviceProperties != NULL)
+            {
+                if (mallocAndStrcpy_s((char**)&iothubDevice.deviceProperties, deviceProperties) != 0)
+                {
+                    /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                    /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                    LogError("mallocAndStrcpy_s failed for deviceProperties");
+                    result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                }
+            }
+            if (serviceProperties != NULL)
+            {
+                if (mallocAndStrcpy_s((char**)&iothubDevice.serviceProperties, serviceProperties) != 0)
+                {
+                    /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                    /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                    LogError("mallocAndStrcpy_s failed for serviceProperties");
+                    result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                }
+            }
+            if ((connectionState != NULL) && (strcmp(connectionState, DEVICE_JSON_DEFAULT_VALUE_CONNECTED) == 0))
             {
                 iothubDevice.connectionState = IOTHUB_DEVICE_CONNECTION_STATE_CONNECTED;
             }
-            iothubDevice.connectionStateUpdatedTime = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_CONNECTIONSTATEUPDATEDTIME);
-
-            iothubDevice.status = IOTHUB_DEVICE_STATUS_DISABLED;
-            value = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_STATUS);
-            if ((value != NULL) && (strcmp(value, DEVICE_JSON_DEFAULT_VALUE_ENABLED) == 0))
+            if ((status != NULL) && (strcmp(status, DEVICE_JSON_DEFAULT_VALUE_ENABLED) == 0))
             {
                 iothubDevice.status = IOTHUB_DEVICE_STATUS_ENABLED;
             }
-            iothubDevice.statusReason = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_STATUSREASON);
-            iothubDevice.statusUpdatedTime = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_STATUSUPDATEDTIME);
-
-            iothubDevice.lastActivityTime = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_LASTACTIVITYTIME);
-            iothubDevice.cloudToDeviceMessageCount = 0;
-            value = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_CLOUDTODEVICEMESSAGECOUNT);
-            if (value != NULL)
+            if (cloudToDeviceMessageCount != NULL)
             {
-                iothubDevice.cloudToDeviceMessageCount = atoi(value);
+                iothubDevice.cloudToDeviceMessageCount = atoi(cloudToDeviceMessageCount);
             }
-
-            iothubDevice.isManaged = false;
-            value = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_ISMANAGED);
-            if ((value != NULL) && (strcmp(value, DEVICE_JSON_DEFAULT_VALUE_TRUE) == 0))
+            if ((isManaged != NULL) && (strcmp(isManaged, DEVICE_JSON_DEFAULT_VALUE_TRUE) == 0))
             {
                 iothubDevice.isManaged = true;
             }
-
-            iothubDevice.configuration = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_CONFIGURATION);
-            iothubDevice.deviceProperties = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_DEVICEROPERTIES);
-            iothubDevice.serviceProperties = (char*)json_object_get_string(root_object, DEVICE_JSON_KEY_DEVICE_SERVICEPROPERTIES);
 
             *deviceInfo = iothubDevice;
 
@@ -290,7 +423,6 @@ static IOTHUB_REGISTRYMANAGER_RESULT parseDeviceListJson(BUFFER_HANDLE jsonBuffe
     {
         const char* bufferStr = NULL;
         JSON_Value* root_value = NULL;
-        JSON_Object* device_object = NULL;
         JSON_Array* device_array = NULL;
 
         if ((bufferStr = (const char*)BUFFER_u_char(jsonBuffer)) == NULL)
@@ -313,73 +445,210 @@ static IOTHUB_REGISTRYMANAGER_RESULT parseDeviceListJson(BUFFER_HANDLE jsonBuffe
         }
         else
         {
+
             result = IOTHUB_REGISTRYMANAGER_OK;
             for (size_t i = 0; i < json_array_get_count(device_array); i++)
             {
-                device_object = json_array_get_object(device_array, i);
-
-                IOTHUB_DEVICE* iothubDevice;
-                if ((iothubDevice = (IOTHUB_DEVICE*)malloc(sizeof(IOTHUB_DEVICE))) == NULL)
+                JSON_Object* device_object;
+                if ((device_object = json_array_get_object(device_array, i)) != NULL)
                 {
-                    LogError("Malloc failed for iothubDevice");
-                    result = IOTHUB_REGISTRYMANAGER_ERROR;
-                    break;
-                }
-                else
-                {
-                    iothubDevice->deviceId = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_NAME);
-                    iothubDevice->primaryKey = (char*)json_object_dotget_string(device_object, DEVICE_JSON_KEY_DEVICE_PRIMARY_KEY);
-                    iothubDevice->secondaryKey = (char*)json_object_dotget_string(device_object, DEVICE_JSON_KEY_DEVICE_SECONDARY_KEY);
-                    iothubDevice->generationId = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_GENERATION_ID);
-                    iothubDevice->eTag = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_ETAG);
-
-                    iothubDevice->connectionState = IOTHUB_DEVICE_CONNECTION_STATE_DISCONNECTED;
-                    const char* value = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_CONNECTIONSTATE);
-                    if ((value != NULL) && (strcmp(value, DEVICE_JSON_DEFAULT_VALUE_CONNECTED) == 0))
+                    IOTHUB_DEVICE* iothubDevice;
+                    if ((iothubDevice = (IOTHUB_DEVICE*)malloc(sizeof(IOTHUB_DEVICE))) == NULL)
                     {
-                        iothubDevice->connectionState = IOTHUB_DEVICE_CONNECTION_STATE_CONNECTED;
-                    }
-                    iothubDevice->connectionStateUpdatedTime = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_CONNECTIONSTATEUPDATEDTIME);
-
-                    iothubDevice->status = IOTHUB_DEVICE_STATUS_DISABLED;
-                    value = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_STATUS);
-                    if ((value != NULL) && (strcmp(value, DEVICE_JSON_DEFAULT_VALUE_ENABLED) == 0))
-                    {
-                        iothubDevice->status = IOTHUB_DEVICE_STATUS_ENABLED;
-                    }
-                    iothubDevice->statusReason = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_STATUSREASON);
-                    iothubDevice->statusUpdatedTime = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_STATUSUPDATEDTIME);
-
-                    iothubDevice->lastActivityTime = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_LASTACTIVITYTIME);
-                    iothubDevice->cloudToDeviceMessageCount = 0;
-                    value = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_CLOUDTODEVICEMESSAGECOUNT);
-                    if (value != NULL)
-                    {
-                        iothubDevice->cloudToDeviceMessageCount = atoi(value);
-                    }
-
-                    iothubDevice->isManaged = false;
-                    value = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_ISMANAGED);
-                    if ((value != NULL) && (strcmp(value, DEVICE_JSON_DEFAULT_VALUE_TRUE) == 0))
-                    {
-                        iothubDevice->isManaged = true;
-                    }
-
-                    iothubDevice->configuration = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_CONFIGURATION);
-                    iothubDevice->deviceProperties = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_DEVICEROPERTIES);
-                    iothubDevice->serviceProperties = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_SERVICEPROPERTIES);
-
-                    if ((list_add(deviceList, iothubDevice)) == NULL)
-                    {
-                        LogError("list_add failed");
+                        LogError("Malloc failed for iothubDevice");
                         result = IOTHUB_REGISTRYMANAGER_ERROR;
+                        break;
+                    }
+                    else
+                    {
+                        iothubDevice->deviceId = NULL;
+                        iothubDevice->primaryKey = NULL;
+                        iothubDevice->secondaryKey = NULL;
+                        iothubDevice->generationId = NULL;
+                        iothubDevice->eTag = NULL;
+                        iothubDevice->connectionStateUpdatedTime = NULL;
+                        iothubDevice->connectionState = IOTHUB_DEVICE_CONNECTION_STATE_DISCONNECTED;
+                        iothubDevice->connectionStateUpdatedTime = NULL;
+                        iothubDevice->status = IOTHUB_DEVICE_STATUS_DISABLED;
+                        iothubDevice->statusReason = NULL;
+                        iothubDevice->statusUpdatedTime = NULL;
+                        iothubDevice->lastActivityTime = NULL;
+                        iothubDevice->cloudToDeviceMessageCount = 0;
+                        iothubDevice->isManaged = false;
+                        iothubDevice->configuration = NULL;
+                        iothubDevice->deviceProperties = NULL;
+                        iothubDevice->serviceProperties = NULL;
+
+                        const char* deviceId = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_NAME);
+                        const char* primaryKey = (char*)json_object_dotget_string(device_object, DEVICE_JSON_KEY_DEVICE_PRIMARY_KEY);
+                        const char* secondaryKey = (char*)json_object_dotget_string(device_object, DEVICE_JSON_KEY_DEVICE_SECONDARY_KEY);
+                        const char* generationId = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_GENERATION_ID);
+                        const char* eTag = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_ETAG);
+
+                        const char* connectionState = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_CONNECTIONSTATE);
+                        const char* connectionStateUpdatedTime = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_CONNECTIONSTATEUPDATEDTIME);
+
+                        const char* status = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_STATUS);
+                        const char* statusReason = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_STATUSREASON);
+                        const char* statusUpdatedTime = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_STATUSUPDATEDTIME);
+
+                        const char* lastActivityTime = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_LASTACTIVITYTIME);
+                        const char* cloudToDeviceMessageCount = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_CLOUDTODEVICEMESSAGECOUNT);
+
+                        const char* isManaged = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_ISMANAGED);
+                        const char* configuration = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_CONFIGURATION);
+                        const char* deviceProperties = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_DEVICEROPERTIES);
+                        const char* serviceProperties = (char*)json_object_get_string(device_object, DEVICE_JSON_KEY_DEVICE_SERVICEPROPERTIES);
+
+                        if (deviceId != NULL)
+                        {
+                            if (mallocAndStrcpy_s((char**)&iothubDevice->deviceId, deviceId) != 0)
+                            {
+                                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                                LogError("mallocAndStrcpy_s failed for deviceId");
+                                result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                            }
+                        }
+                        if (primaryKey != NULL)
+                        {
+                            if (mallocAndStrcpy_s((char**)&iothubDevice->primaryKey, primaryKey) != 0)
+                            {
+                                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                                LogError("mallocAndStrcpy_s failed for primaryKey");
+                                result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                            }
+                        }
+                        if (secondaryKey != NULL)
+                        {
+                            if (mallocAndStrcpy_s((char**)&iothubDevice->secondaryKey, secondaryKey) != 0)
+                            {
+                                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                                LogError("mallocAndStrcpy_s failed for secondaryKey");
+                                result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                            }
+                        }
+                        if (generationId != NULL)
+                        {
+                            if (mallocAndStrcpy_s((char**)&iothubDevice->generationId, generationId) != 0)
+                            {
+                                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                                LogError("mallocAndStrcpy_s failed for generationId");
+                                result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                            }
+                        }
+                        if (eTag != NULL)
+                        {
+                            if (mallocAndStrcpy_s((char**)&iothubDevice->eTag, eTag) != 0)
+                            {
+                                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                                LogError("mallocAndStrcpy_s failed for eTag");
+                                result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                            }
+                        }
+                        if (connectionStateUpdatedTime != NULL)
+                        {
+                            if (mallocAndStrcpy_s((char**)&iothubDevice->connectionStateUpdatedTime, connectionStateUpdatedTime) != 0)
+                            {
+                                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                                LogError("mallocAndStrcpy_s failed for connectionStateUpdatedTime");
+                                result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                            }
+                        }
+                        if (statusReason != NULL)
+                        {
+                            if (mallocAndStrcpy_s((char**)&iothubDevice->statusReason, statusReason) != 0)
+                            {
+                                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                                LogError("mallocAndStrcpy_s failed for statusReason");
+                                result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                            }
+                        }
+                        if (statusUpdatedTime != NULL)
+                        {
+                            if (mallocAndStrcpy_s((char**)&iothubDevice->statusUpdatedTime, statusUpdatedTime) != 0)
+                            {
+                                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                                LogError("mallocAndStrcpy_s failed for statusUpdatedTime");
+                                result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                            }
+                        }
+                        if (lastActivityTime != NULL)
+                        {
+                            if (mallocAndStrcpy_s((char**)&iothubDevice->lastActivityTime, lastActivityTime) != 0)
+                            {
+                                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                                LogError("mallocAndStrcpy_s failed for lastActivityTime");
+                                result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                            }
+                        }
+                        if (configuration != NULL)
+                        {
+                            if (mallocAndStrcpy_s((char**)&iothubDevice->configuration, configuration) != 0)
+                            {
+                                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                                LogError("mallocAndStrcpy_s failed for configuration");
+                                result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                            }
+                        }
+                        if (deviceProperties != NULL)
+                        {
+                            if (mallocAndStrcpy_s((char**)&iothubDevice->deviceProperties, deviceProperties) != 0)
+                            {
+                                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                                LogError("mallocAndStrcpy_s failed for deviceProperties");
+                                result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                            }
+                        }
+                        if (serviceProperties != NULL)
+                        {
+                            if (mallocAndStrcpy_s((char**)&iothubDevice->serviceProperties, serviceProperties) != 0)
+                            {
+                                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                                LogError("mallocAndStrcpy_s failed for serviceProperties");
+                                result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                            }
+                        }
+                        if ((connectionState != NULL) && (strcmp(connectionState, DEVICE_JSON_DEFAULT_VALUE_CONNECTED) == 0))
+                        {
+                            iothubDevice->connectionState = IOTHUB_DEVICE_CONNECTION_STATE_CONNECTED;
+                        }
+                        if ((status != NULL) && (strcmp(status, DEVICE_JSON_DEFAULT_VALUE_ENABLED) == 0))
+                        {
+                            iothubDevice->status = IOTHUB_DEVICE_STATUS_ENABLED;
+                        }
+                        if (cloudToDeviceMessageCount != NULL)
+                        {
+                            iothubDevice->cloudToDeviceMessageCount = atoi(cloudToDeviceMessageCount);
+                        }
+                        if ((isManaged != NULL) && (strcmp(isManaged, DEVICE_JSON_DEFAULT_VALUE_TRUE) == 0))
+                        {
+                            iothubDevice->isManaged = true;
+                        }
+
+                        if ((list_add(deviceList, iothubDevice)) == NULL)
+                        {
+                            LogError("list_add failed");
+                            result = IOTHUB_REGISTRYMANAGER_ERROR;
+                        }
+                        json_object_clear(device_object);
                     }
                 }
             }
+            json_array_clear(device_array);
+            json_value_free(root_value);
         }
-        json_array_clear(device_array);
-        json_object_clear(device_object);
-        json_value_free(root_value);
     }
     return result;
 }
@@ -805,14 +1074,14 @@ void IoTHubRegistryManager_Destroy(IOTHUB_REGISTRYMANAGER_HANDLE registryManager
     if (registryManagerHandle != NULL)
     {
         /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_006 : [ If the registryManagerHandle input parameter is not NULL IoTHubRegistryManager_Destroy shall free the memory of it and return ] */
-        IOTHUB_SERVICE_CLIENT_AUTH* authInfo = (IOTHUB_SERVICE_CLIENT_AUTH*)registryManagerHandle;
+        IOTHUB_REGISTRYMANAGER* regManHandle = (IOTHUB_REGISTRYMANAGER*)registryManagerHandle;
 
-        free(authInfo->hostname);
-        free(authInfo->iothubName);
-        free(authInfo->iothubSuffix);
-        free(authInfo->sharedAccessKey);
-        free(authInfo->keyName);
-        free(authInfo);
+        free(regManHandle->hostname);
+        free(regManHandle->iothubName);
+        free(regManHandle->iothubSuffix);
+        free(regManHandle->sharedAccessKey);
+        free(regManHandle->keyName);
+        free(regManHandle);
     }
 }
 

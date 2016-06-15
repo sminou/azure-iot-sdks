@@ -658,15 +658,15 @@ void IoTHubMessaging_LL_Destroy(IOTHUB_MESSAGING_HANDLE messagingHandle)
     if (messagingHandle != NULL)
     {
         /*Codes_SRS_IOTHUBMESSAGING_12_006: [ If the messagingHandle input parameter is not NULL IoTHubMessaging_LL_Destroy shall free all resources (memory) allocated by IoTHubMessaging_LL_Create ] */
-        IOTHUB_MESSAGING* authInfo = (IOTHUB_MESSAGING*)messagingHandle;
+        IOTHUB_MESSAGING* messHandle = (IOTHUB_MESSAGING*)messagingHandle;
 
-        free(authInfo->callback_data);
-        free(authInfo->hostname);
-        free(authInfo->iothubName);
-        free(authInfo->iothubSuffix);
-        free(authInfo->sharedAccessKey);
-        free(authInfo->keyName);
-        free(authInfo);
+        free(messHandle->callback_data);
+        free(messHandle->hostname);
+        free(messHandle->iothubName);
+        free(messHandle->iothubSuffix);
+        free(messHandle->sharedAccessKey);
+        free(messHandle->keyName);
+        free(messHandle);
     }
 }
 

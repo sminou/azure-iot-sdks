@@ -310,8 +310,23 @@ IOTHUB_ACCOUNT_INFO_HANDLE IoTHubAccount_Init(bool createDevice, const char* cal
                             }
                             else
                             {
-                                iothub_account_info->deviceKey = (char*)deviceInfo.primaryKey;
+                                if (mallocAndStrcpy_s((char**)&iothub_account_info->deviceKey, (char*)deviceInfo.primaryKey) != 0)
+                                {
+                                    LogError("mallocAndStrcpy_s failed for primaryKey\r\n");
+                                }
                             }
+                            free((char*)deviceInfo.deviceId);
+                            free((char*)deviceInfo.primaryKey);
+                            free((char*)deviceInfo.secondaryKey);
+                            free((char*)deviceInfo.generationId);
+                            free((char*)deviceInfo.eTag);
+                            free((char*)deviceInfo.connectionStateUpdatedTime);
+                            free((char*)deviceInfo.statusReason);
+                            free((char*)deviceInfo.statusUpdatedTime);
+                            free((char*)deviceInfo.lastActivityTime);
+                            free((char*)deviceInfo.configuration);
+                            free((char*)deviceInfo.deviceProperties);
+                            free((char*)deviceInfo.serviceProperties);
                         }
                     }
                 }
@@ -338,8 +353,6 @@ void IoTHubAccount_deinit(IOTHUB_ACCOUNT_INFO_HANDLE acctHandle)
         IoTHubRegistryManager_Destroy(acctInfo->iothub_registrymanager_handle);
         IoTHubServiceClientAuth_Destroy(acctInfo->iothub_service_client_auth_handle);
 
-        free((void*)acctInfo->connString);
-        free((void*)acctInfo->eventhubConnString);
         free(acctInfo->hostname);
         free(acctInfo->iothubName);
         free(acctInfo->iothubSuffix);
