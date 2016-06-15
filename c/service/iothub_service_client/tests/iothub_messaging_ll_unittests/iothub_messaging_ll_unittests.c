@@ -1475,6 +1475,8 @@ BEGIN_TEST_SUITE(iothub_messaging_ll_unittests)
         STRICT_EXPECTED_CALL(messagesender_send(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
             .IgnoreAllArguments();
 
+        STRICT_EXPECTED_CALL(message_destroy(IGNORED_PTR_ARG))
+            .IgnoreAllArguments();
         STRICT_EXPECTED_CALL(properties_destroy(IGNORED_PTR_ARG))
             .IgnoreAllArguments();
         STRICT_EXPECTED_CALL(amqpvalue_destroy(IGNORED_PTR_ARG))
