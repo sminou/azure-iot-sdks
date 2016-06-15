@@ -22,7 +22,6 @@
 
 MOCKABLE_FUNCTION(, JSON_Value*, json_parse_string, const char *, string);
 MOCKABLE_FUNCTION(, const char*, json_object_get_string, const JSON_Object *, object, const char *, name);
-MOCKABLE_FUNCTION(, void, json_value_free, JSON_Value *, value);
 MOCKABLE_FUNCTION(, JSON_Object*, json_value_get_object, const JSON_Value *, value);
 MOCKABLE_FUNCTION(, double, json_object_get_number, const JSON_Object*, object, const char*, name);
 MOCKABLE_FUNCTION(, char*, json_serialize_to_string, const JSON_Value*, value);
@@ -35,6 +34,9 @@ MOCKABLE_FUNCTION(, JSON_Array*, json_array_get_array, const JSON_Array*, array,
 MOCKABLE_FUNCTION(, JSON_Object*, json_array_get_object, const JSON_Array*, array, size_t, index);
 MOCKABLE_FUNCTION(, JSON_Array*, json_value_get_array, const JSON_Value*, value);
 MOCKABLE_FUNCTION(, size_t, json_array_get_count, const JSON_Array*, array);
+MOCKABLE_FUNCTION(, JSON_Status, json_array_clear, JSON_Array*, array);
+MOCKABLE_FUNCTION(, JSON_Status, json_object_clear, JSON_Object*, object);
+MOCKABLE_FUNCTION(, void, json_value_free, JSON_Value *, value);
 #undef ENABLE_MOCKS
 
 static TEST_MUTEX_HANDLE g_testByTest;
@@ -846,15 +848,14 @@ BEGIN_TEST_SUITE(iothub_registrymanager_unittests)
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
 
         // act
         IoTHubRegistryManager_Destroy(handle);
 
         // assert
         ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
-
-        ///cleanup
-        free(handle);
     }
     
     /* Tests_SRS_IOTHUBREGISTRYMANAGER_12_007: [ IoTHubRegistryManager_CreateDevice shall verify the input parameters and if any of them are NULL then return IOTHUB_REGISTRYMANAGER_INVALID_ARG ]*/
@@ -960,6 +961,7 @@ BEGIN_TEST_SUITE(iothub_registrymanager_unittests)
             .IgnoreAllArguments();
 
         STRICT_EXPECTED_CALL(json_free_serialized_string(TEST_CHAR_PTR));
+        STRICT_EXPECTED_CALL(json_object_clear(TEST_JSON_OBJECT));
         STRICT_EXPECTED_CALL(json_value_free(TEST_JSON_VALUE));
 
         STRICT_EXPECTED_CALL(BUFFER_new());
@@ -1057,6 +1059,11 @@ BEGIN_TEST_SUITE(iothub_registrymanager_unittests)
         STRICT_EXPECTED_CALL(json_object_get_string(TEST_JSON_OBJECT, TEST_DEVICE_JSON_KEY_DEVICE_SERVICEPROPERTIES))
             .SetReturn(TEST_SERVICEPROPERTIES);
 
+        STRICT_EXPECTED_CALL(json_object_clear(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(json_value_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
         STRICT_EXPECTED_CALL(BUFFER_delete(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(BUFFER_delete(IGNORED_PTR_ARG))
@@ -1119,7 +1126,10 @@ BEGIN_TEST_SUITE(iothub_registrymanager_unittests)
             .IgnoreAllArguments();
 
         STRICT_EXPECTED_CALL(json_free_serialized_string(TEST_CHAR_PTR));
-        STRICT_EXPECTED_CALL(json_value_free(TEST_JSON_VALUE));
+        STRICT_EXPECTED_CALL(json_object_clear(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(json_value_free(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(BUFFER_new());
 
@@ -1211,7 +1221,10 @@ BEGIN_TEST_SUITE(iothub_registrymanager_unittests)
             .IgnoreAllArguments();
 
         STRICT_EXPECTED_CALL(json_free_serialized_string(TEST_CHAR_PTR));
-        STRICT_EXPECTED_CALL(json_value_free(TEST_JSON_VALUE));
+        STRICT_EXPECTED_CALL(json_object_clear(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(json_value_free(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(BUFFER_new());
 
@@ -1313,10 +1326,11 @@ BEGIN_TEST_SUITE(iothub_registrymanager_unittests)
             .IgnoreArgument_source()
             .IgnoreArgument_size();
 
-        STRICT_EXPECTED_CALL(json_free_serialized_string(IGNORED_PTR_ARG))
-            .IgnoreArgument_string();
-
-        STRICT_EXPECTED_CALL(json_value_free(TEST_JSON_VALUE));
+        STRICT_EXPECTED_CALL(json_free_serialized_string(TEST_CHAR_PTR));
+        STRICT_EXPECTED_CALL(json_object_clear(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(json_value_free(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(BUFFER_new());
 
@@ -1427,6 +1441,7 @@ BEGIN_TEST_SUITE(iothub_registrymanager_unittests)
             if (
                 (i != 8) &&
                 (i != 9) &&
+                (i != 10) &&
                 (i != 23) && 
                 (i != 24) &&
                 (i != 25) &&
@@ -1454,7 +1469,8 @@ BEGIN_TEST_SUITE(iothub_registrymanager_unittests)
                 (i != 47) &&
                 (i != 48) &&
                 (i != 49) &&
-                (i != 50)
+                (i != 50) &&
+                (i != 51)
                 )
             {
                 IOTHUB_DEVICE deviceInfo;
@@ -1598,6 +1614,11 @@ BEGIN_TEST_SUITE(iothub_registrymanager_unittests)
             .SetReturn(TEST_DEVICEPROPERTIES);
         STRICT_EXPECTED_CALL(json_object_get_string(TEST_JSON_OBJECT, TEST_DEVICE_JSON_KEY_DEVICE_SERVICEPROPERTIES))
             .SetReturn(TEST_SERVICEPROPERTIES);
+
+        STRICT_EXPECTED_CALL(json_object_clear(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(json_value_free(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(BUFFER_delete(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
@@ -1840,7 +1861,10 @@ BEGIN_TEST_SUITE(iothub_registrymanager_unittests)
             .IgnoreAllArguments();
 
         STRICT_EXPECTED_CALL(json_free_serialized_string(TEST_CHAR_PTR));
-        STRICT_EXPECTED_CALL(json_value_free(TEST_JSON_VALUE));
+        STRICT_EXPECTED_CALL(json_object_clear(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(json_value_free(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(BUFFER_new());
 
@@ -2418,6 +2442,13 @@ BEGIN_TEST_SUITE(iothub_registrymanager_unittests)
         STRICT_EXPECTED_CALL(json_array_get_count(TEST_JSON_ARRAY))
             .SetReturn(1);
 
+        STRICT_EXPECTED_CALL(json_array_clear(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(json_object_clear(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(json_value_free(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+
         STRICT_EXPECTED_CALL(BUFFER_delete(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
@@ -2561,6 +2592,13 @@ BEGIN_TEST_SUITE(iothub_registrymanager_unittests)
         STRICT_EXPECTED_CALL(json_array_get_count(TEST_JSON_ARRAY))
             .SetReturn(1);
 
+        STRICT_EXPECTED_CALL(json_array_clear(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(json_object_clear(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(json_value_free(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+
         STRICT_EXPECTED_CALL(BUFFER_delete(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
@@ -2604,7 +2642,10 @@ BEGIN_TEST_SUITE(iothub_registrymanager_unittests)
                 (i != 40) &&
                 (i != 41) &&
                 (i != 42) &&
-                (i != 43)
+                (i != 43) &&
+                (i != 44) &&
+                (i != 45) &&
+                (i != 46)
                 )
             {
                 IOTHUB_REGISTRYMANAGER_RESULT result = IoTHubRegistryManager_GetDeviceList(TEST_IOTHUB_REGISTRYMANAGER_HANDLE, 10, deviceList);
@@ -2731,6 +2772,11 @@ BEGIN_TEST_SUITE(iothub_registrymanager_unittests)
         STRICT_EXPECTED_CALL(json_object_get_number(TEST_JSON_OBJECT, TEST_DEVICE_JSON_KEY_ENABLED_DEVICECCOUNT));
         STRICT_EXPECTED_CALL(json_object_get_number(TEST_JSON_OBJECT, TEST_DEVICE_JSON_KEY_DISABLED_DEVICECOUNT));
 
+        STRICT_EXPECTED_CALL(json_object_clear(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(json_value_free(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+
         STRICT_EXPECTED_CALL(BUFFER_delete(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
@@ -2816,6 +2862,11 @@ BEGIN_TEST_SUITE(iothub_registrymanager_unittests)
         STRICT_EXPECTED_CALL(json_object_get_number(TEST_JSON_OBJECT, TEST_DEVICE_JSON_KEY_ENABLED_DEVICECCOUNT));
         STRICT_EXPECTED_CALL(json_object_get_number(TEST_JSON_OBJECT, TEST_DEVICE_JSON_KEY_DISABLED_DEVICECOUNT));
 
+        STRICT_EXPECTED_CALL(json_object_clear(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(json_value_free(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+
         STRICT_EXPECTED_CALL(BUFFER_delete(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
@@ -2839,7 +2890,9 @@ BEGIN_TEST_SUITE(iothub_registrymanager_unittests)
                 (i != 22) &&
                 (i != 23) &&
                 (i != 24) &&
-                (i != 25)
+                (i != 25) &&
+                (i != 26) &&
+                (i != 27)
                 )
             {
                 IOTHUB_REGISTRYMANAGER_RESULT result = IoTHubRegistryManager_GetStatistics(TEST_IOTHUB_REGISTRYMANAGER_HANDLE, &TEST_IOTHUB_REGISTRY_STATISTICS);

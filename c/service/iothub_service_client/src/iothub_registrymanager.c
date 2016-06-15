@@ -103,8 +103,8 @@ static BUFFER_HANDLE constructDeviceJson(const IOTHUB_DEVICE* deviceInfo)
 
     /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_010: [ IoTHubRegistryManager_CreateDevice shall create a flat "key1:value2,key2:value2..." JSON representation from the given deviceCreateInfo parameter using the following parson APIs: json_value_init_object, json_value_get_object, json_object_set_string, json_object_dotset_string ] */
     /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_012: [ IoTHubRegistryManager_CreateDevice shall set the "symmetricKey" value to deviceCreateInfo->primaryKey and deviceCreateInfo->secondaryKey ] */
-    JSON_Value* root_value;
-    JSON_Object* root_object;
+    JSON_Value* root_value = NULL;
+    JSON_Object* root_object = NULL;
     if (deviceInfo == NULL)
     {
         /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_013: [ IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_ERROR_CREATING_JSON if the JSON creation failed  ] */
@@ -162,6 +162,7 @@ static BUFFER_HANDLE constructDeviceJson(const IOTHUB_DEVICE* deviceInfo)
             json_free_serialized_string(serialized_string);
         }
     }
+    json_object_clear(root_object);
     json_value_free(root_value);
 
     return result;
@@ -193,8 +194,8 @@ static IOTHUB_REGISTRYMANAGER_RESULT parseDeviceJson(BUFFER_HANDLE jsonBuffer, I
     else
     {
         const char* bufferStr = NULL;
-        JSON_Value* root_value;
-        JSON_Object* root_object;
+        JSON_Value* root_value = NULL;
+        JSON_Object* root_object = NULL;
 
         if ((bufferStr = (const char*)BUFFER_u_char(jsonBuffer)) == NULL)
         {
@@ -265,6 +266,8 @@ static IOTHUB_REGISTRYMANAGER_RESULT parseDeviceJson(BUFFER_HANDLE jsonBuffer, I
 
             result = IOTHUB_REGISTRYMANAGER_OK;
         }
+        json_object_clear(root_object);
+        json_value_free(root_value);
     }
     return result;
 }
@@ -286,9 +289,9 @@ static IOTHUB_REGISTRYMANAGER_RESULT parseDeviceListJson(BUFFER_HANDLE jsonBuffe
     else
     {
         const char* bufferStr = NULL;
-        JSON_Value* root_value;
-        JSON_Object* device_object;
-        JSON_Array* device_array;
+        JSON_Value* root_value = NULL;
+        JSON_Object* device_object = NULL;
+        JSON_Array* device_array = NULL;
 
         if ((bufferStr = (const char*)BUFFER_u_char(jsonBuffer)) == NULL)
         {
@@ -374,6 +377,9 @@ static IOTHUB_REGISTRYMANAGER_RESULT parseDeviceListJson(BUFFER_HANDLE jsonBuffe
                 }
             }
         }
+        json_array_clear(device_array);
+        json_object_clear(device_object);
+        json_value_free(root_value);
     }
     return result;
 }
@@ -398,8 +404,8 @@ static IOTHUB_REGISTRYMANAGER_RESULT parseStatisticsJson(BUFFER_HANDLE jsonBuffe
     else
     {
         const char* bufferStr = NULL;
-        JSON_Value* root_value;
-        JSON_Object* root_object;
+        JSON_Value* root_value = NULL;
+        JSON_Object* root_object = NULL;
 
         if ((bufferStr = (const char*)BUFFER_u_char(jsonBuffer)) == NULL)
         {
@@ -428,6 +434,8 @@ static IOTHUB_REGISTRYMANAGER_RESULT parseStatisticsJson(BUFFER_HANDLE jsonBuffe
 
             result = IOTHUB_REGISTRYMANAGER_OK;
         }
+        json_object_clear(root_object);
+        json_value_free(root_value);
     }
     return result;
 }
@@ -804,6 +812,7 @@ void IoTHubRegistryManager_Destroy(IOTHUB_REGISTRYMANAGER_HANDLE registryManager
         free(authInfo->iothubSuffix);
         free(authInfo->sharedAccessKey);
         free(authInfo->keyName);
+        free(authInfo);
     }
 }
 

@@ -84,6 +84,9 @@ MOCKABLE_FUNCTION(, const char*, json_object_get_string, const JSON_Object *, ob
 MOCKABLE_FUNCTION(, JSON_Object*, json_array_get_object, const JSON_Array*, array, size_t, index);
 MOCKABLE_FUNCTION(, JSON_Array*, json_value_get_array, const JSON_Value*, value);
 MOCKABLE_FUNCTION(, size_t, json_array_get_count, const JSON_Array*, array);
+MOCKABLE_FUNCTION(, JSON_Status, json_array_clear, JSON_Array*, array);
+MOCKABLE_FUNCTION(, JSON_Status, json_object_clear, JSON_Object*, object);
+MOCKABLE_FUNCTION(, void, json_value_free, JSON_Value *, value);
 MOCKABLE_FUNCTION(, void, TEST_FUNC_IOTHUB_OPEN_COMPLETE_CALLBACK, void*, context);
 MOCKABLE_FUNCTION(, void, TEST_FUNC_IOTHUB_SEND_COMPLETE_CALLBACK, void*, context, IOTHUB_MESSAGING_RESULT, messagingResult);
 MOCKABLE_FUNCTION(, void, TEST_FUNC_IOTHUB_FEEDBACK_MESSAGE_RECEIVED_CALLBACK, void*, context, IOTHUB_SERVICE_FEEDBACK_BATCH*, feedbackBatch);
@@ -1072,7 +1075,10 @@ BEGIN_TEST_SUITE(iothub_messaging_ll_unittests)
 
         STRICT_EXPECTED_CALL(amqpvalue_destroy(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
-
+        STRICT_EXPECTED_CALL(amqpvalue_destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(amqpvalue_destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(amqpvalue_destroy(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
@@ -1967,6 +1973,13 @@ BEGIN_TEST_SUITE(iothub_messaging_ll_unittests)
         STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
+        STRICT_EXPECTED_CALL(json_array_clear(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(json_object_clear(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(json_value_free(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+
         TEST_IOTHUB_MESSAGING* test_handle = (TEST_IOTHUB_MESSAGING*)iothub_messaging_handle;
         test_handle->callback_data->feedbackMessageCallback = on_feedback_message_received;
 
@@ -2054,6 +2067,13 @@ BEGIN_TEST_SUITE(iothub_messaging_ll_unittests)
             .IgnoreAllArguments();
 
         STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(json_array_clear(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(json_object_clear(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(json_value_free(IGNORED_NUM_ARG))
             .IgnoreArgument(1);
 
         TEST_IOTHUB_MESSAGING* test_handle = (TEST_IOTHUB_MESSAGING*)iothub_messaging_handle;
@@ -2145,6 +2165,13 @@ BEGIN_TEST_SUITE(iothub_messaging_ll_unittests)
         STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
+        STRICT_EXPECTED_CALL(json_array_clear(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(json_object_clear(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(json_value_free(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+
         TEST_IOTHUB_MESSAGING* test_handle = (TEST_IOTHUB_MESSAGING*)iothub_messaging_handle;
         test_handle->callback_data->feedbackMessageCallback = on_feedback_message_received;
 
@@ -2232,6 +2259,13 @@ BEGIN_TEST_SUITE(iothub_messaging_ll_unittests)
             .IgnoreAllArguments();
 
         STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(json_array_clear(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(json_object_clear(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(json_value_free(IGNORED_NUM_ARG))
             .IgnoreArgument(1);
 
         TEST_IOTHUB_MESSAGING* test_handle = (TEST_IOTHUB_MESSAGING*)iothub_messaging_handle;
@@ -2323,6 +2357,13 @@ BEGIN_TEST_SUITE(iothub_messaging_ll_unittests)
         STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
+        STRICT_EXPECTED_CALL(json_array_clear(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(json_object_clear(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(json_value_free(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+
         TEST_IOTHUB_MESSAGING* test_handle = (TEST_IOTHUB_MESSAGING*)iothub_messaging_handle;
         test_handle->callback_data->feedbackMessageCallback = on_feedback_message_received;
 
@@ -2410,6 +2451,13 @@ BEGIN_TEST_SUITE(iothub_messaging_ll_unittests)
             .IgnoreAllArguments();
 
         STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(json_array_clear(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(json_object_clear(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(json_value_free(IGNORED_NUM_ARG))
             .IgnoreArgument(1);
 
         TEST_IOTHUB_MESSAGING* test_handle = (TEST_IOTHUB_MESSAGING*)iothub_messaging_handle;

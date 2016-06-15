@@ -363,9 +363,9 @@ static AMQP_VALUE IoTHubMessaging_LL_FeedbackMessageReceived(const void* context
         IOTHUB_MESSAGE_HANDLE iothub_message_handle = NULL;
         const char* messageString = NULL;
         const unsigned char* buffer = NULL;
-        JSON_Value* root_value;
-        JSON_Array* feedback_array;
-        JSON_Object* feedback_object;
+        JSON_Value* root_value = NULL;
+        JSON_Object* feedback_object = NULL;
+        JSON_Array* feedback_array = NULL;
 
         /*Codes_SRS_IOTHUBMESSAGING_12_058: [ If context is not NULL IoTHubMessaging_LL_FeedbackMessageReceived shall get the content string of the message by calling message_get_body_amqp_data ] */
         /*Codes_SRS_IOTHUBMESSAGING_12_059: [ IoTHubMessaging_LL_FeedbackMessageReceived shall parse the response JSON to IOTHUB_SERVICE_FEEDBACK_BATCH struct ] */
@@ -514,6 +514,9 @@ static AMQP_VALUE IoTHubMessaging_LL_FeedbackMessageReceived(const void* context
                 }
             }
         }
+        json_array_clear(feedback_array);
+        json_object_clear(feedback_object);
+        json_value_free(root_value);
     }
     return result;
 }
@@ -975,6 +978,8 @@ IOTHUB_MESSAGING_RESULT IoTHubMessaging_LL_Open(IOTHUB_MESSAGING_HANDLE messagin
     }
     amqpvalue_destroy(sendSource);
     amqpvalue_destroy(sendTarget);
+    amqpvalue_destroy(receiveSource);
+    amqpvalue_destroy(receiveTarget);
 
     if (send_target_address != NULL)
     {
@@ -1142,6 +1147,7 @@ IOTHUB_MESSAGING_RESULT IoTHubMessaging_LL_Send(IOTHUB_MESSAGING_HANDLE messagin
             }
         }
     }
+    message_destroy(amqpMessage);
     properties_destroy(properties);
     amqpvalue_destroy(to_amqp_value);
     if (deviceDestinationString != NULL)

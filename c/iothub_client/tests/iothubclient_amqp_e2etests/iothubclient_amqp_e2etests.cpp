@@ -20,6 +20,7 @@
 #include "azure_c_shared_utility/buffer_.h"
 #include "azure_c_shared_utility/threadapi.h"
 #include "azure_c_shared_utility/platform.h"
+#include "iothub_messaging_ll.h"
 
 static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 static bool g_callbackRecv = false;
@@ -392,13 +393,25 @@ BEGIN_TEST_SUITE(iothubclient_amqp_e2etests)
         iotHubConfig.deviceKey = IoTHubAccount_GetDeviceKey(g_iothubAcctInfo);
         iotHubConfig.protocol = AMQP_Protocol;
 
-        IOTHUB_TEST_HANDLE iotHubTestHandle = IoTHubTest_Initialize(IoTHubAccount_GetEventHubConnectionString(g_iothubAcctInfo), IoTHubAccount_GetIoTHubConnString(g_iothubAcctInfo), IoTHubAccount_GetDeviceId(g_iothubAcctInfo), IoTHubAccount_GetDeviceKey(g_iothubAcctInfo), IoTHubAccount_GetEventhubListenName(g_iothubAcctInfo), IoTHubAccount_GetEventhubAccessKey(g_iothubAcctInfo), IoTHubAccount_GetSharedAccessSignature(g_iothubAcctInfo), IoTHubAccount_GetEventhubConsumerGroup(g_iothubAcctInfo));
-        ASSERT_IS_NOT_NULL(iotHubTestHandle);
+        IOTHUB_MESSAGING_HANDLE iothub_messaging_handle = IoTHubAccount_GetMessagingHandle(g_iothubAcctInfo);
 
-        IOTHUB_TEST_CLIENT_RESULT testResult = IoTHubTest_SendMessage(iotHubTestHandle, (const unsigned char*)notifyData->toBeSend, notifyData->toBeSendSize);
-        ASSERT_ARE_EQUAL(IOTHUB_TEST_CLIENT_RESULT, IOTHUB_TEST_CLIENT_OK, testResult);
-
-        IoTHubTest_Deinit(iotHubTestHandle);
+        IOTHUB_MESSAGING_RESULT iotHubMessagingResult;
+        iotHubMessagingResult = IoTHubMessaging_LL_Open(iothub_messaging_handle, NULL, (void*)1);
+        if (iotHubMessagingResult == IOTHUB_MESSAGING_OK)
+        {
+            IOTHUB_MESSAGE_HANDLE messageHandle = IoTHubMessage_CreateFromByteArray((const unsigned char*)notifyData->toBeSend, notifyData->toBeSendSize);
+            iotHubMessagingResult = IoTHubMessaging_LL_Send(iothub_messaging_handle, iotHubConfig.deviceId, messageHandle, NULL, NULL);
+            if (iotHubMessagingResult == IOTHUB_MESSAGING_OK)
+            {
+                for (int i = 0; i < 100; i++)
+                {
+                    IoTHubMessaging_LL_DoWork(iothub_messaging_handle);
+                    ThreadAPI_Sleep(50);
+                }
+            }
+            IoTHubMessage_Destroy(messageHandle);
+        }
+        IoTHubMessaging_LL_Close(iothub_messaging_handle);
 
         iotHubClientHandle = IoTHubClient_Create(&iotHubConfig);
         ASSERT_IS_NOT_NULL(iotHubClientHandle);

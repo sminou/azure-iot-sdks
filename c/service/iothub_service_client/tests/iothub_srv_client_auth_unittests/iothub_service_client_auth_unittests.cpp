@@ -63,6 +63,7 @@ static STRING_HANDLE TEST_KEY_STRING_HANDLE = (STRING_HANDLE)0x4545;
 static STRING_HANDLE TEST_VALUE_STRING_HANDLE = (STRING_HANDLE)0x4646;
 
 static const char* TEST_CHAR_PTR = "TestString";
+static const char* TEST_CONNECTION_STRING = "HostName=aaa.bbb.net;SharedAccessKeyName=xxx;SharedAccessKey=yyy";
 static size_t currentmalloc_call;
 static size_t whenShallmalloc_fail;
 
@@ -1377,19 +1378,110 @@ TEST_FUNCTION(IoTHubServiceClient_Destroy_do_clean_up_and_return_if_input_parame
     // arrange
     CIoTHubServiceClientAuthMocks mocks;
 
-    STRICT_EXPECTED_CALL(mocks, gballoc_free(TEST_HOSTNAME))
-        .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, gballoc_free(TEST_IOTHUBNAME))
-        .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, gballoc_free(TEST_IOTHUBSUFFIX))
-        .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, gballoc_free(TEST_SHAREDACCESSKEY))
-        .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, gballoc_free(TEST_SHAREDACCESSKEYNAME))
+    whenShallmalloc_fail = 0;
+    STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
 
+    STRICT_EXPECTED_CALL(mocks, STRING_construct(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+
+    STRICT_EXPECTED_CALL(mocks, connectionstringparser_parse(IGNORED_PTR_ARG))
+        .IgnoreArgument(1)
+        .SetReturn(TEST_MAP_HANDLE);
+
+    STRICT_EXPECTED_CALL(mocks, Map_GetValueFromKey(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2)
+        .SetReturn(TEST_CONST_CHAR_PTR);
+
+    STRICT_EXPECTED_CALL(mocks, Map_GetValueFromKey(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2)
+        .SetReturn(TEST_CONST_CHAR_PTR);
+
+    STRICT_EXPECTED_CALL(mocks, Map_GetValueFromKey(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2)
+        .SetReturn(TEST_CONST_CHAR_PTR);
+
+    STRICT_EXPECTED_CALL(mocks, STRING_construct(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+
+    STRICT_EXPECTED_CALL(mocks, STRING_TOKENIZER_create(IGNORED_PTR_ARG))
+        .IgnoreArgument(1)
+        .SetReturn(TEST_STRING_TOKENIZER_HANDLE);
+
+    STRICT_EXPECTED_CALL(mocks, STRING_new())
+        .SetReturn(TEST_STRING_HANDLE);
+
+    STRICT_EXPECTED_CALL(mocks, STRING_new())
+        .SetReturn(TEST_STRING_HANDLE);
+
+    STRICT_EXPECTED_CALL(mocks, STRING_TOKENIZER_get_next_token(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "."))
+        .IgnoreAllArguments()
+        .SetReturn(0);
+
+    STRICT_EXPECTED_CALL(mocks, STRING_TOKENIZER_get_next_token(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "0"))
+        .IgnoreAllArguments()
+        .SetReturn(0);
+
+    EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+        .IgnoreAllArguments()
+        .SetReturn(0);
+
+    EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+        .IgnoreAllArguments()
+        .SetReturn(0);
+
+    EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+        .IgnoreAllArguments()
+        .SetReturn(0);
+
+    EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
+        .IgnoreAllArguments()
+        .SetReturn(TEST_CHAR_PTR);
+
+    EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
+        .IgnoreAllArguments()
+        .SetReturn(TEST_CHAR_PTR);
+
+    EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+        .IgnoreAllArguments()
+        .SetReturn(0);
+
+    EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+        .IgnoreAllArguments()
+        .SetReturn(0);
+
+    STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(mocks, STRING_TOKENIZER_destroy(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(mocks, Map_Destroy(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+
+    STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+
     // act
-    IoTHubServiceClientAuth_Destroy(TEST_IOTHUB_SERVICE_CLIENT_AUTH_HANDLE);
+    IOTHUB_SERVICE_CLIENT_AUTH_HANDLE handle = IoTHubServiceClientAuth_CreateFromConnectionString(TEST_CONNECTION_STRING);
+    IoTHubServiceClientAuth_Destroy(handle);
 
     // assert
     mocks.AssertActualAndExpectedCalls();
