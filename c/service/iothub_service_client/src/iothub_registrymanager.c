@@ -167,7 +167,14 @@ static BUFFER_HANDLE constructDeviceJson(const IOTHUB_DEVICE* deviceInfo)
             json_free_serialized_string(serialized_string);
         }
     }
-    json_object_clear(root_object);
+
+    JSON_Status jsonStatus = json_object_clear(root_object);
+    if (jsonStatus != JSONSuccess)
+    {
+        /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_013: [ IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_ERROR_CREATING_JSON if the JSON creation failed  ] */
+        LogError("json_object_clear failed");
+        result = NULL;
+    }
     json_value_free(root_value);
 
     return result;
@@ -218,6 +225,7 @@ static IOTHUB_REGISTRYMANAGER_RESULT parseDeviceJson(BUFFER_HANDLE jsonBuffer, I
         const char* bufferStr = NULL;
         JSON_Value* root_value = NULL;
         JSON_Object* root_object = NULL;
+        JSON_Status jsonStatus;
 
         if ((bufferStr = (const char*)BUFFER_u_char(jsonBuffer)) == NULL)
         {
@@ -404,7 +412,14 @@ static IOTHUB_REGISTRYMANAGER_RESULT parseDeviceJson(BUFFER_HANDLE jsonBuffer, I
 
             result = IOTHUB_REGISTRYMANAGER_OK;
         }
-        json_object_clear(root_object);
+
+        if ((jsonStatus = json_object_clear(root_object)) != JSONSuccess)
+        {
+            /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+            /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+            LogError("json_object_clear failed");
+            result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+        }
         json_value_free(root_value);
     }
     return result;
@@ -429,6 +444,7 @@ static IOTHUB_REGISTRYMANAGER_RESULT parseDeviceListJson(BUFFER_HANDLE jsonBuffe
         const char* bufferStr = NULL;
         JSON_Value* root_value = NULL;
         JSON_Array* device_array = NULL;
+        JSON_Status jsonStatus;
 
         if ((bufferStr = (const char*)BUFFER_u_char(jsonBuffer)) == NULL)
         {
@@ -644,14 +660,30 @@ static IOTHUB_REGISTRYMANAGER_RESULT parseDeviceListJson(BUFFER_HANDLE jsonBuffe
 
                         if ((list_add(deviceList, iothubDevice)) == NULL)
                         {
+                            /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                            /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
                             LogError("list_add failed");
                             result = IOTHUB_REGISTRYMANAGER_ERROR;
                         }
-                        json_object_clear(device_object);
+
+                        if ((jsonStatus = json_object_clear(device_object)) != JSONSuccess)
+                        {
+                            /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                            /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                            LogError("json_object_clear failed");
+                            result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+                        }
                     }
                 }
             }
-            json_array_clear(device_array);
+
+            if ((jsonStatus = json_array_clear(device_array)) != JSONSuccess)
+            {
+                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_023: [ If the JSON parsing failed, IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_035: [ If the JSON parsing failed, IoTHubRegistryManager_GetDevice shall return IOTHUB_REGISTRYMANAGER_JSON_ERROR ] */
+                LogError("json_array_clear failed");
+                result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+            }
             json_value_free(root_value);
         }
     }
@@ -680,6 +712,7 @@ static IOTHUB_REGISTRYMANAGER_RESULT parseStatisticsJson(BUFFER_HANDLE jsonBuffe
         const char* bufferStr = NULL;
         JSON_Value* root_value = NULL;
         JSON_Object* root_object = NULL;
+        JSON_Status jsonStatus;
 
         if ((bufferStr = (const char*)BUFFER_u_char(jsonBuffer)) == NULL)
         {
@@ -708,7 +741,13 @@ static IOTHUB_REGISTRYMANAGER_RESULT parseStatisticsJson(BUFFER_HANDLE jsonBuffe
 
             result = IOTHUB_REGISTRYMANAGER_OK;
         }
-        json_object_clear(root_object);
+
+        if ((jsonStatus = json_object_clear(root_object)) != JSONSuccess)
+        {
+            /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_082: [ If the parsing failed, IoTHubRegistryManager_GetStatistics shall return IOTHUB_REGISTRYMANAGER_ERROR ] */
+            LogError("json_object_clear failed");
+            result = IOTHUB_REGISTRYMANAGER_JSON_ERROR;
+        }
         json_value_free(root_value);
     }
     return result;
