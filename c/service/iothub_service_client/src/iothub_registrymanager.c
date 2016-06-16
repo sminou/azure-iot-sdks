@@ -158,7 +158,12 @@ static BUFFER_HANDLE constructDeviceJson(const IOTHUB_DEVICE* deviceInfo)
         }
         else
         {
-            result = BUFFER_create(serialized_string, strlen(serialized_string));
+            if ((result = BUFFER_create(serialized_string, strlen(serialized_string))) == NULL)
+            {
+                /*Codes_SRS_IOTHUBREGISTRYMANAGER_12_013: [ IoTHubRegistryManager_CreateDevice shall return IOTHUB_REGISTRYMANAGER_ERROR_CREATING_JSON if the JSON creation failed  ] */
+                LogError("json_serialize_to_string failed");
+                result = NULL;
+            }
             json_free_serialized_string(serialized_string);
         }
     }
