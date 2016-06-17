@@ -11,7 +11,7 @@
 
 XIO_HANDLE getWebSocketsIOTransport(const char* fqdn, int port, const char* certificates)
 {
-	WSIO_CONFIG ws_io_config = { fqdn, port, DEFAULT_WS_PROTOCOL_NAME, DEFAULT_WS_RELATIVE_PATH, true, certificates };
+	WSIO_CONFIG ws_io_config = { fqdn, port, DEFAULT_WS_PROTOCOL_NAME, DEFAULT_WS_RELATIVE_PATH, true };
 
 	return xio_create(wsio_get_interface_description(), &ws_io_config, NULL);
 }
@@ -29,6 +29,7 @@ static TRANSPORT_LL_HANDLE IoTHubTransportAMQP_Create_WebSocketsOverTls(const IO
 }
 
 static TRANSPORT_PROVIDER thisTransportProvider_WebSocketsOverTls = {
+	IoTHubTransportAMQP_GetHostname,
 	IoTHubTransportAMQP_SetOption,
 	IoTHubTransportAMQP_Create_WebSocketsOverTls,
 	IoTHubTransportAMQP_Destroy,
@@ -40,7 +41,7 @@ static TRANSPORT_PROVIDER thisTransportProvider_WebSocketsOverTls = {
 	IoTHubTransportAMQP_GetSendStatus
 };
 
-extern const void* AMQP_Protocol_over_WebSocketsTls(void)
+extern const TRANSPORT_PROVIDER* AMQP_Protocol_over_WebSocketsTls(void)
 {
 	return &thisTransportProvider_WebSocketsOverTls;
 }

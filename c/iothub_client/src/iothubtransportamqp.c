@@ -52,7 +52,7 @@
 #define MESSAGE_SENDER_SOURCE_ADDRESS "ingress"
 #define MESSAGE_SENDER_MAX_LINK_SIZE UINT64_MAX
 
-typedef XIO_HANDLE(*TLS_IO_TRANSPORT_PROVIDER)(const char* fqdn, int port);
+typedef XIO_HANDLE(*TLS_IO_TRANSPORT_PROVIDER)(const char* fqdn, int port, const char* certificates);
 
 typedef enum CBS_STATE_TAG
 {
@@ -611,8 +611,9 @@ static AMQP_VALUE on_message_received(const void* context, MESSAGE_HANDLE messag
     return result;
 }
 
-static XIO_HANDLE getTLSIOTransport(const char* fqdn, int port)
+static XIO_HANDLE getTLSIOTransport(const char* fqdn, int port, const char* certificates)
 {
+	(void)certificates;
     TLSIO_CONFIG tls_io_config = { fqdn, port };
     const IO_INTERFACE_DESCRIPTION* io_interface_description = platform_get_default_tlsio();
     return xio_create(io_interface_description, &tls_io_config, NULL);
@@ -685,7 +686,7 @@ static int establishConnection(AMQP_TRANSPORT_INSTANCE* transport_state)
 
     // Codes_SRS_IOTHUBTRANSPORTAMQP_09_110: [IoTHubTransportAMQP_DoWork shall create the TLS IO using transport_state->io_transport_provider callback function] 
     if (transport_state->tls_io == NULL &&
-        (transport_state->tls_io = transport_state->tls_io_transport_provider(STRING_c_str(transport_state->iotHubHostFqdn), transport_state->iotHubPort)) == NULL)
+        (transport_state->tls_io = transport_state->tls_io_transport_provider(STRING_c_str(transport_state->iotHubHostFqdn), transport_state->iotHubPort, NULL)) == NULL)
     {
         // Codes_SRS_IOTHUBTRANSPORTAMQP_09_136: [If transport_state->io_transport_provider_callback fails, IoTHubTransportAMQP_DoWork shall fail and return immediately]
         result = RESULT_FAILURE;
@@ -1634,7 +1635,7 @@ static IOTHUB_CLIENT_RESULT IoTHubTransportAMQP_SetOption(TRANSPORT_LL_HANDLE ha
         else
         {
             if (transport_state->tls_io == NULL &&
-                (transport_state->tls_io = transport_state->tls_io_transport_provider(STRING_c_str(transport_state->iotHubHostFqdn), transport_state->iotHubPort)) == NULL)
+                (transport_state->tls_io = transport_state->tls_io_transport_provider(STRING_c_str(transport_state->iotHubHostFqdn), transport_state->iotHubPort, NULL)) == NULL)
             {
                 result = IOTHUB_CLIENT_ERROR;
                 LogError("Failed to obtain a TLS I/O transport layer.");
