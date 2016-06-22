@@ -31,6 +31,10 @@ extern const char* IoTHubAccount_GetEventhubAccessKey(IOTHUB_ACCOUNT_INFO_HANDLE
 extern const size_t IoTHubAccount_GetIoTHubPartitionCount(IOTHUB_ACCOUNT_INFO_HANDLE acctHandle);
 extern const char* IoTHubAccount_GetEventhubConsumerGroup(IOTHUB_ACCOUNT_INFO_HANDLE acctHandle);
 
+#ifdef MBED_BUILD_TIMESTAMP
+extern const char* getMbedParameter(const char* name);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

@@ -422,7 +422,7 @@ static int retrieveConnStringInfo(IOTHUB_ACCOUNT_INFO* accountInfo)
 }
 
 #ifdef MBED_BUILD_TIMESTAMP
-static const char* getMbedParameter(const char* name)
+const char* getMbedParameter(const char* name)
 {
 	static char value[MBED_PARAM_MAX_LENGTH];
 	(void)printf("%s?\r\n", name);

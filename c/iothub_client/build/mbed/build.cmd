@@ -97,8 +97,8 @@ rem ----------------------------------------------------------------------------
 rem -- build iothub longhaul tests
 rem -----------------------------------------------------------------------------
 
-rem call :compile longhaul_tests %build-root%\tests\longhaul_tests\mbed %longhaul_tests_download_bin_path%
-rem if not %errorlevel%==0 exit /b %errorlevel%
+call :compile longhaul_tests %build-root%\tests\longhaul_tests\mbed %longhaul_tests_download_bin_path%
+if not %errorlevel%==0 exit /b %errorlevel%
 
 goto:eof
 

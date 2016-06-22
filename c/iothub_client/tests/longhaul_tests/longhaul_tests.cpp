@@ -20,7 +20,6 @@
 #include "iothub_account.h"
 #include "iothubtest.h"
 
-#include "azure_c_shared_utility/buffer_.h"
 #include "azure_c_shared_utility/threadapi.h"
 #include "azure_c_shared_utility/platform.h"
 #include "azure_c_shared_utility/iot_logging.h"
@@ -122,6 +121,7 @@ typedef struct EXPECTED_RECEIVE_DATA_TAG
 	LOCK_HANDLE lock;
 } EXPECTED_RECEIVE_DATA;
 
+#ifndef MBED_BUILD_TIMESTAMP
 static int IoTHubCallback(void* context, const char* data, size_t size)
 {
 	size;
@@ -155,6 +155,7 @@ static int IoTHubCallback(void* context, const char* data, size_t size)
 	}
 	return result;
 }
+#endif
 
 static void SendConfirmationCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void* userContextCallback)
 {
@@ -438,9 +439,9 @@ static int getLonghaulTestDurationInSeconds(char *testName, int defaultDurationI
 		strToUpperCase(envVarName);
 
 #ifndef MBED_BUILD_TIMESTAMP
-		char *envVarValue = getenv(envVarName);
+		const char *envVarValue = getenv(envVarName);
 #else
-		char *envVarValue = getMbedParameter(envVarName);
+		const char *envVarValue = getMbedParameter(envVarName);
 #endif
 
 		if (envVarValue != NULL)
@@ -464,7 +465,7 @@ static int getLonghaulTestDurationInSeconds(char *testName, int defaultDurationI
 }
 
 #ifdef MBED_BUILD_TIMESTAMP
-static int verifyEventReceivedByHub(const EXPECTED_SEND_DATA* sendData)
+static int verifyEventReceivedByHub(EXPECTED_SEND_DATA* sendData)
 {
 	int result;
 	int response = -1;
@@ -480,13 +481,13 @@ static int verifyEventReceivedByHub(const EXPECTED_SEND_DATA* sendData)
 	{
 		if (response == 0)
 		{
-			sendData->wasFoundInHub = response;
+			sendData->wasFoundInHub = false;
 			LogError("Event not received by IoT hub within expected time.");
 			result = __LINE__;
 		}
 		else if (response == 1)
 		{
-			sendData->wasFoundInHub = response;
+			sendData->wasFoundInHub = true;
 			result = 0;
 		}
 		else
@@ -795,6 +796,46 @@ static int sendEventLoop(IOTHUB_CLIENT_HANDLE iotHubClientHandle, LONGHAUL_SEND_
 	return result;
 }
 
+#ifdef MBED_BUILD_TIMESTAMP
+static int sendMessageToDevice(EXPECTED_RECEIVE_DATA* receiveData)
+{
+	int result;
+	int response;
+
+	(void)printf("SendMessage[data=%s][size=%i]\r\n", (const unsigned char*)receiveData->data, receiveData->dataSize);
+
+	if (scanf("%d", &response) <= 0)
+	{
+		LogError("Failed reading response for SendMessage request.");
+		result = __LINE__;
+	}
+	else
+	{
+		result = response;
+	}
+
+	return result;
+}
+#else
+static int sendMessageToDevice(IOTHUB_TEST_HANDLE iotHubTestHandle, EXPECTED_RECEIVE_DATA* receiveData)
+{
+	int result;
+	IOTHUB_TEST_CLIENT_RESULT sendResult;
+
+	if ((sendResult = IoTHubTest_SendMessage(iotHubTestHandle, (const unsigned char*)receiveData->data, receiveData->dataSize)) != IOTHUB_TEST_CLIENT_OK)
+	{
+		LogError("Call to IoTHubTest_SendMessage failed (%i).", sendResult);
+		result = __LINE__;
+	}
+	else
+	{
+		result = 0;
+	}
+
+	return result;
+}
+#endif
+
 static int receiveMessageLoop(IOTHUB_CLIENT_HANDLE iotHubClientHandle, LONGHAUL_RECEIVE_TEST_STATE* test_state)
 {
 	int result = 0;
@@ -856,16 +897,20 @@ static int receiveMessageLoop(IOTHUB_CLIENT_HANDLE iotHubClientHandle, LONGHAUL_
 					}
 					else
 					{
-						IOTHUB_TEST_CLIENT_RESULT sendResult;
+						int sendMessageResult;
 
 						if (IoTHubClient_SetMessageCallback(iotHubClientHandle, ReceiveMessageCallback, receiveData) != IOTHUB_CLIENT_OK)
 						{
 							LogError("Call to IoTHubClient_SetMessageCallback failed.");
 							result = __LINE__;
 						}
-						else if ((sendResult = IoTHubTest_SendMessage(iotHubTestHandle, (const unsigned char*)receiveData->data, receiveData->dataSize)) != IOTHUB_TEST_CLIENT_OK)
+#ifdef MBED_BUILD_TIMESTAMP
+						else if ((sendMessageResult = sendMessageToDevice(receiveData)) != 0)
+#else
+						else if ((sendMessageResult = sendMessageToDevice(iotHubTestHandle, receiveData)) != 0)
+#endif
 						{
-							LogError("Call to IoTHubTest_SendMessage failed (%i).", sendResult);
+							LogError("Failed sending C2D message (%i).", sendMessageResult);
 							result = __LINE__;
 						}
 						else
